@@ -1,0 +1,28 @@
+# copy payload and RDP template to server
+
+- name: Create Netlogon directory
+  ansible.windows.win_file:
+    path: C:\Netlogon
+    state: directory
+
+- name: Share Netlogon directory
+  ansible.windows.win_share:
+    name: Netlogon
+    description: Netlogon Share
+    path: C:\Netlogon
+    read: Everyone
+
+- name: Copy payload to server
+  ansible.windows.win_copy:
+    src: files/payload.exe
+    dest: C:\Netlogon\weaponised-rdp.exe
+
+- name: Copy start.bat to server
+  ansible.windows.win_copy:
+    src: files/start.bat
+    dest: C:\Netlogon\start.bat
+
+- name: Copy template RDP file to server
+  ansible.windows.win_copy:
+    src: files/template.rdp
+    dest: C:\tmp\template.rdp

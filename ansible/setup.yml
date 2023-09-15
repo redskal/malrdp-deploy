@@ -1,0 +1,8 @@
+---
+- name: MalRDP deployment
+  hosts: all
+  roles:
+    - role: software
+    - role: copy_files
+    - role: create_user
+    - role: soften

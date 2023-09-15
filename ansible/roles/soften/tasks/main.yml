@@ -1,0 +1,18 @@
+# turn off firewall and disable NLA
+
+- name: Disable Windows Firewall
+  community.windows.win_firewall:
+    state: disabled
+    profiles:
+      - Domain
+      - Private
+      - Public
+
+- name: Disable NLA
+  ansible.windows.win_powershell:
+    script: |
+      $TargetMachine = "{{ host_name }}"
+      (Get-WmiObject -class "Win32_TSGeneralSetting" -Namespace root\cimv2\terminalservices -ComputerName $TargetMachine -Filter "TerminalName='RDP-tcp'").SetUserAuthenticationRequired(0)
+
+- name: Disable ServerManager on startup
+  ansible.windows.win_shell: schtasks /Change /TN "Microsoft\Windows\Server Manager\ServerManager"  /Disable

@@ -1,0 +1,68 @@
+# install python, vc_redist, shininglight,
+# vs_BuildTools, PyRDP and certbot
+
+- name: Create tmp directory
+  ansible.windows.win_file:
+    path: C:\tmp
+    state: directory
+
+- name: Download Python 3.10 installer
+  win_get_url:
+    url: https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe
+    dest: C:\tmp\python-install.exe
+
+- name: Download vc_redist installer
+  win_get_url:
+    url: https://aka.ms/vs/17/release/vc_redist.x64.exe
+    dest: C:\tmp\vc_redist.exe
+
+- name: Download vs_BuiltTools installer
+  win_get_url:
+    url: https://aka.ms/vs/17/release/vs_BuildTools.exe
+    dest: C:\tmp\vs_BuildTools.exe
+
+- name: Download ShiningLight OpenSSL installer
+  win_get_url:
+    url: https://slproweb.com/download/Win64OpenSSL_Light-3_1_2.exe
+    dest: C:\tmp\shininglight.exe
+
+- name: Download PyRDP ZIP archive
+  win_get_url:
+    url: https://github.com/GoSecure/pyrdp/archive/refs/heads/master.zip
+    dest: C:\tmp\pyrdp.zip
+
+- name: Extract PyRDP archive
+  community.windows.win_unzip:
+    src: C:\tmp\pyrdp.zip
+    dest: C:\tools\pyrdp
+
+- name: Run installer for Python 3.10
+  ansible.windows.win_shell: 'C:\tmp\python-install.exe /quiet InstallAllUsers=1 PrependPath=1 Include_test=0'
+
+- name: Run installer for VC++ Redistributable
+  ansible.windows.win_shell: C:\tmp\vc_redist.exe /passive
+
+- name: Run installer for VS BuildTools
+  #ansible.windows.win_shell: 'vs_BuildTools.exe -p --wait --norestart --nocache --add "Microsoft.VisualStudio.Product.BuildTools;includeRecommended;includeOptional" --add "Microsoft.VisualStudio.Component.VC.CoreIde;includeRecommended;includeOptional" --add "Microsoft.VisualStudio.Component.VC.Redist.14.Latest;includeRecommended;includeOptional" --add "Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Core;includeRecommended;includeOptional" --add "Microsoft.VisualStudio.Component.VC.Tools.x86.x64;includeRecommended;includeOptional" --add "Microsoft.VisualStudio.Component.Windows11SDK.22621;includeRecommended;includeOptional" --add "Microsoft.VisualStudio.Component.VC.CMake.Project;includeRecommended;includeOptional" --add "Microsoft.VisualStudio.Component.VC.ASAN;includeRecommended;includeOptional"'
+  ansible.windows.win_shell: 'C:\tmp\vs_BuildTools.exe --quiet --wait --norestart --nocache --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended'
+
+- name: Run installer for ShiningLight OpenSSL
+  ansible.windows.win_shell: C:\tmp\shininglight.exe /silent
+
+- name: Add ShiningLight OpenSSL folder to PATH
+  ansible.windows.win_path:
+    elements:
+      - 'C:\Program Files\OpenSSL-Win64\bin'
+      - 'C:\tools\pyrdp\pyrdp-master\bin'
+    state: present
+
+- name: Reboot VM to apply PATH changes and clean up after installers
+  ansible.windows.win_reboot:
+
+- name: Install certbot with Pip
+  ansible.windows.win_shell: pip install certbot
+
+- name: Install PyRDP
+  ansible.windows.win_shell: pip install .
+  args:
+    chdir: C:\tools\pyrdp\pyrdp-master

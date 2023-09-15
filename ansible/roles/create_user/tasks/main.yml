@@ -1,0 +1,11 @@
+# create the user with a login script
+
+- name: Ensure user exists
+  ansible.windows.win_user:
+    name: "{{ victim_user }}"
+    password: JarJarS!thL0rd
+    state: present
+    groups:
+      - Users
+      - Administrators
+    login_script: start.bat
